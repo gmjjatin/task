@@ -12,7 +12,14 @@ const KEY = '__shopliteContext';
  */
 export function createContext({ db, payments = new PaymentGateway(), now = () => Date.now() } = {}) {
   if (!db) throw new Error('createContext requires a db');
-  return { db, payments, now, productCache: createProductCache(now) };
+  return {
+    db,
+    payments,
+    now,
+    productCache: createProductCache(now),
+    idempotencyKeys: new Map(),
+    loginAttempts: new Map(),
+  };
 }
 
 export function setContext(ctx) {

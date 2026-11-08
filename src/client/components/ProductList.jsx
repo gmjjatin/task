@@ -35,7 +35,7 @@ export default function ProductList({ version, onAdd }) {
                 {formatPrice(product.priceCents)} · {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
               </div>
             </div>
-            <button onClick={() => onAdd(products[index])} disabled={product.stock === 0}>
+            <button onClick={() => onAdd(product)} disabled={product.stock === 0}>
               Add to cart
             </button>
           </li>

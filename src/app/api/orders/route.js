@@ -12,13 +12,22 @@ export async function GET(request) {
     const user = await requireAuth(ctx, request);
 
     const params = request.nextUrl.searchParams;
-    const page = Number(params.get('page')) || 1;
-    const limit = Number(params.get('limit')) || 10;
+    const page = Math.max(1, Number(params.get('page')) || 1);
+    const limit = Math.max(1, Number(params.get('limit')) || 10);
+    const offset = (page - 1) * limit;
+
+    const totalRow = await ctx.db.get('SELECT COUNT(*) AS total FROM orders WHERE user_id = ?', [user.id]);
     const rows = await ctx.db.all(
       'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
-      [user.id, limit, page * limit]
+      [user.id, limit, offset]
     );
-    return json(rows.map(toOrderSummary));
+
+    return json({
+      page,
+      limit,
+      total: Number(totalRow.total),
+      items: rows.map(toOrderSummary),
+    });
   } catch (err) {
     return errorResponse(err);
   }

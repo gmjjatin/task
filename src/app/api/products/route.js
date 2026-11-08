@@ -22,7 +22,7 @@ export async function GET(request) {
     if (cached) return json(cached);
 
     const rows = q
-      ? await ctx.db.all(`SELECT * FROM products WHERE name LIKE '%${q}%' ORDER BY id`)
+      ? await ctx.db.all('SELECT * FROM products WHERE name LIKE ? ORDER BY id', [`%${q}%`])
       : await ctx.db.all('SELECT * FROM products ORDER BY id');
     const body = { items: rows.map(toProduct) };
     ctx.productCache.set(q, body);

@@ -4,17 +4,26 @@ import { formatPrice } from '../format';
 
 export default function Cart({ items, onQuantityChange, onRemove, onOrderPlaced }) {
   const [status, setStatus] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalCents = items.reduce((sum, item) => sum + item.product.priceCents * item.quantity, 0);
 
   async function placeOrder() {
+    if (isSubmitting || items.length === 0) return;
+
     setStatus(null);
+    setIsSubmitting(true);
     try {
       const order = await api.checkout(items);
-      setStatus(`Order #${order.id} placed.`);
+      setStatus({ type: 'status', message: `Order #${order.id} placed.` });
       onOrderPlaced(order);
     } catch (err) {
-      console.error(err);
+      const message = err.retryAfter
+        ? `${err.message}. Please wait ${err.retryAfter} seconds.`
+        : err.message;
+      setStatus({ type: 'alert', message });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -43,8 +52,8 @@ export default function Cart({ items, onQuantityChange, onRemove, onOrderPlaced 
         </ul>
       )}
       <p>Total: {formatPrice(totalCents)}</p>
-      {status && <p role="status">{status}</p>}
-      <button className="primary" onClick={placeOrder} disabled={items.length === 0}>
+      {status && <p role={status.type === 'alert' ? 'alert' : 'status'}>{status.message}</p>}
+      <button className="primary" onClick={placeOrder} disabled={items.length === 0 || isSubmitting}>
         Place order
       </button>
     </section>

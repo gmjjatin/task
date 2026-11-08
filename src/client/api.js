@@ -31,7 +31,19 @@ async function request(path, { method = 'GET', body } = {}) {
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new Error('Request failed');
+  if (!res.ok) {
+    let payload = {};
+    try {
+      payload = await res.json();
+    } catch {
+      payload = {};
+    }
+    const err = new Error(payload?.error?.message || 'Request failed');
+    err.status = res.status;
+    err.code = payload?.error?.code;
+    err.retryAfter = Number(res.headers.get('Retry-After')) || null;
+    throw err;
+  }
   return res.status === 204 ? null : res.json();
 }
 
