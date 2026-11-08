@@ -8,7 +8,7 @@ export default function OrderHistory() {
   useEffect(() => {
     api
       .getOrders(1)
-      .then(setOrders)
+      .then((data) => setOrders(Array.isArray(data?.items) ? data.items : []))
       .catch((err) => console.error(err));
   }, []);
 
