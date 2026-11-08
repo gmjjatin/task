@@ -12,8 +12,12 @@ export async function GET(request) {
     const user = await requireAuth(ctx, request);
 
     const params = request.nextUrl.searchParams;
-    const page = Math.max(1, Number(params.get('page')) || 1);
-    const limit = Math.max(1, Number(params.get('limit')) || 10);
+    const rawPage = Number(params.get('page'));
+    const rawLimit = Number(params.get('limit'));
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+    const limit = Number.isFinite(rawLimit)
+      ? Math.min(50, Math.max(1, Math.floor(rawLimit)))
+      : 10;
     const offset = (page - 1) * limit;
 
     const totalRow = await ctx.db.get('SELECT COUNT(*) AS total FROM orders WHERE user_id = ?', [user.id]);

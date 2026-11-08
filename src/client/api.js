@@ -63,8 +63,8 @@ export const api = {
   getProducts() {
     return request('/api/products');
   },
-  getOrders(page = 1) {
-    return request(`/api/orders?page=${page}`);
+  getOrders(page = 1, limit = 10) {
+    return request(`/api/orders?page=${page}&limit=${limit}`);
   },
   checkout(items) {
     return request('/api/checkout', {
